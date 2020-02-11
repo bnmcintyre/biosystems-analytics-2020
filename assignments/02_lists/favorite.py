@@ -50,10 +50,6 @@ def main():
     args = get_args()
     favorite(args)
 
-    # flag_arg = args.on
-    # pos_arg = args.positional
-
-
 # --------------------------------------------------
 if __name__ == '__main__':
     main()
