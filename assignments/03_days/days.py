@@ -57,7 +57,6 @@ def main():
             day1 = (f'"{day[i]}"')
             print(f"Can't find {day1}")
 
-
 # --------------------------------------------------
 if __name__ == '__main__':
     main()
