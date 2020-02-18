@@ -18,24 +18,28 @@ def get_args():
         description='Day of the Week',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('day',
-                        metavar='str',
-                        #nargs= '+',
-                        help='What Day of the Week is it?')
+    parser.add_argument(
+        'day',
+        metavar='str',
+        #nargs= '+',
+        help='What Day of the Week is it?')
 
     return parser.parse_args()
+
 
 #---------------------------------------------------
 def day_dict(args):
     """gets day of the week"""
 
-    feeling = {'Monday': ' I never go to work',
-           'Tuesday': ' I stay at home',
-           'Wednesday': ' I never feel inclined',
-           'Thursday': ", it's a holiday",
-           'Friday': 's I detest',
-           'Saturday': "Oh, it's much too late on a",
-           'Sunday': ' is the day of rest'}
+    feeling = {
+        'Monday': ' I never go to work',
+        'Tuesday': ' I stay at home',
+        'Wednesday': ' I never feel inclined',
+        'Thursday': ", it's a holiday",
+        'Friday': 's I detest',
+        'Saturday': "Oh, it's much too late on a",
+        'Sunday': ' is the day of rest'
+    }
 
     day = args.day
     excuse = feeling.get(args.day)
@@ -58,6 +62,7 @@ def main():
 
     args = get_args()
     day_dict(args)
+
 
 # --------------------------------------------------
 if __name__ == '__main__':
