@@ -34,23 +34,18 @@ def get_args():
 
     args = parser.parse_args()
 
-    if args.num < 1: #ask about how to incorporate this into the actual argparse statement (line 28-33)
-        print('Usage: head.py[-h] [-n int] FILE')
-        print(f'head.py: error: --num "{args.num}" must be greater than 0')
-        sys.exit(1)
-    else:
-        num = args.num
+    if args.num < 1:
+        parser.error(f'--num "{args.num}" must be greater than 0')
 
-    lines = args.file.readlines() #ask if manipulating files can ONLY occur where you define them
-    for line in range(0,num): #(using type=argparse.filetype('r')) - like how does this line work??
-        print(lines[line], end = '') #was having trouble trying to do this when I tried doing it in main instead of get_args
+    return args
 
-#ERASE ALL COMMENTS AFTER ASKING QUESTIONS TO KEN THEN REPUSH TO GITHUB!!!!!
 # --------------------------------------------------
 def main():
     """Make a jazz noise here"""
     args = get_args()
 
+    for _ in range(0,args.num):
+        print(args.file.readline(), end='')
 
 # --------------------------------------------------
 if __name__ == '__main__':
