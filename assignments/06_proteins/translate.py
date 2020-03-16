@@ -39,16 +39,17 @@ def get_args():
                         type=str,
                         default='out.txt')
 
-    return parser.parse_args()
 
+    return parser.parse_args()
 
 
 # --------------------------------------------------
 def main():
     """Make a jazz noise here"""
     args = get_args()
-    seq = args.seq
-    outname = args.out
+    seq = (f" '{args.seq}' ")
+    outname = (f'{args.out}')
+
 
     codons = {}
 
@@ -56,14 +57,18 @@ def main():
         codon, aa = line.rstrip().split()
         codons.update({codon:aa})
 
+    my_codons = []
+
     k = 3
     for codon in [seq[i:i + k] for i in range(0, len(seq) - k + 1)]:
-        if codon in codons: # if I just ask it to print the key pair [print(codons.get(codon)], it doesnt return anything :(
-            out = open(outname, 'wt+')
-            out.write(codons.get(codon, "codon not found"))
-            out.close()
+        if codon in codons:
+            my_codons.append(codons.get(codon, "codon not found"))
 
-    print(f'output written to "{outname}"')
+    out = open(outname, 'wt+')
+    out.write(str(''.join(my_codons)))
+    out.close()
+
+    print(f'Output written to "{args.out}".')
 
 
 
