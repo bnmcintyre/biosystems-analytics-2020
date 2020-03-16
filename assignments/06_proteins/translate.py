@@ -57,12 +57,11 @@ def main():
     my_codons = []
 
     k = 3
-    for codon in [seq[i:i + k] for i in range(0, len(seq) - k + 1)]:
-        if codon in codons:
-            my_codons.append(codons.get(codon, 'codon not found'))
+    for codon in [seq[i:i + k] for i in range(0, len(seq) - k + 1, k)]:
+        my_codons.append(codons.get(codon, '-'))
 
     out = open(args.out, 'wt')
-    out.write(''.join(my_codons))
+    out.write(''.join(my_codons) + '\n')
     out.close()
 
     print(f'Output written to "{args.out}".')
