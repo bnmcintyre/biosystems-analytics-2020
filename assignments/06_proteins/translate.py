@@ -21,7 +21,6 @@ def get_args():
 
     parser.add_argument('seq',
                         metavar='str',
-                        nargs='+',
                         help='A Nucleotide Sequence')
 
 
@@ -47,9 +46,7 @@ def get_args():
 def main():
     """Make a jazz noise here"""
     args = get_args()
-    seq = (f" '{args.seq}' ")
-    outname = (f'{args.out}')
-
+    seq = args.seq.upper()
 
     codons = {}
 
@@ -62,10 +59,10 @@ def main():
     k = 3
     for codon in [seq[i:i + k] for i in range(0, len(seq) - k + 1)]:
         if codon in codons:
-            my_codons.append(codons.get(codon, "codon not found"))
+            my_codons.append(codons.get(codon, 'codon not found'))
 
-    out = open(outname, 'wt+')
-    out.write(str(''.join(my_codons)))
+    out = open(args.out, 'wt')
+    out.write(''.join(my_codons))
     out.close()
 
     print(f'Output written to "{args.out}".')
