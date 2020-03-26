@@ -54,11 +54,9 @@ def main():
     for fh in args.file:
         outfile = os.path.join(outdir, os.path.basename(fh.name))
         out = open(outfile, 'wt')
-
-    for file in file:
         filecount += 1
-        for line in file:
-            line.split(' ')
+
+        for line in fh:
             rna = line.replace('T', 'U')
             seqcount += 1
             out.write(''.join(rna))
