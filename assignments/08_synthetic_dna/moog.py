@@ -90,17 +90,17 @@ def create_pool(pctgc, max_len, seq_type):
     return ''.join(sorted(pool))
 
 # --------------------------------------------------
-# def test_create_pool():
-#  """ Test create_pool """
-#
-#      state = random.getstate()
-#      random.seed(1)
-#      assert create_pool(.5, 10, 'dna') == 'AAACCCGGTT'
-#      assert create_pool(.6, 11, 'rna') == 'AACCCCGGGUU'
-#      assert create_pool(.7, 12, 'dna') == 'ACCCCCGGGGGT'
-#      assert create_pool(.7, 20, 'rna') == 'AAACCCCCCCGGGGGGGUUU'
-#      assert create_pool(.4, 15, 'dna') == 'AAAACCCGGGTTTTT'
-#      random.setstate(state)
+def test_create_pool():
+ """ Test create_pool """
+
+     # state = random.getstate()
+     # random.seed(1)
+     # assert create_pool(.5, 10, 'dna') == 'AAACCCGGTT'
+     # assert create_pool(.6, 11, 'rna') == 'AACCCCGGGUU'
+     # assert create_pool(.7, 12, 'dna') == 'ACCCCCGGGGGT'
+     # assert create_pool(.7, 20, 'rna') == 'AAACCCCCCCGGGGGGGUUU'
+     # assert create_pool(.4, 15, 'dna') == 'AAAACCCGGGTTTTT'
+     # random.setstate(state)
 
 # --------------------------------------------------
 def main():
@@ -109,7 +109,7 @@ def main():
     args = get_args()
     random.seed(args.seed)
     out = args.outfile
-    seqtype = args.seqtype[0].upper() + args.seqtype[1].upper() + args.seqtype[2].upper()
+    seqtype = ''.join(args.seqtype).upper()
     pool = create_pool(args.pctgc, args.maxlen, args.seqtype)
 
     outname = open(args.outfile, 'wt')
@@ -117,8 +117,7 @@ def main():
     for i in range(1, args.numseqs + 1):
         seqlen = random.randint(args.minlen, args.maxlen)
         seq = ''.join(random.sample(pool, seqlen))
-        outname.write(f'>{i}' + '\n' + seq)
-        #print(f'>{i}' + '\n' + seq)
+        outname.write(f'>{i}' + '\n' + seq + '\n')
 
     outname.close()
 
