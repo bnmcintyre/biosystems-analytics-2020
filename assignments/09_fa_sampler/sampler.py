@@ -28,7 +28,7 @@ def get_args():
 
     parser.add_argument('-p',
                         '--pct',
-                        help='% of reads to take',
+                        help='percentage of reads to take',
                         metavar='float',
                         type=float,
                         default=0.1)
@@ -48,7 +48,7 @@ def get_args():
     args = parser.parse_args()
 
     if not 0 <= args.pct <= 1:
-        parser.parse_args(f'% reads {args.pct} must be between 0 and 1.')
+        parser.error(f'--pct "{args.pct}" must be between 0 and 1')
 
     if os.path.isdir(args.outdir) == False:
         os.makedirs(args.outdir)
@@ -78,10 +78,9 @@ def main():
                 num_seq += 1
         out_fh.close()
 
-    print(f'Wrote {num_seq} sequence{"" if num_seq == 1 else "s"} '
+    print(f'Wrote {"{:,}".format(num_seq)} sequence{"" if num_seq == 1 else "s"} '
           f'from {file_num} file{"" if file_num == 1 else "s"} '
           f'to directory "{args.outdir}"')
-
 
 
 # --------------------------------------------------
