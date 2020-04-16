@@ -9,6 +9,7 @@ import argparse
 import os
 import sys
 import re
+from Bio import SeqIO
 
 
 # --------------------------------------------------
@@ -24,7 +25,7 @@ def get_args():
                         '--cdhit',
                         help='Output file by CD-HIT (clustered proteins)',
                         metavar='cdhit',
-                        type=argparse.FileType('rt'),
+                        type=argparse.FileType('r'),
                         required=True)
 
 
@@ -32,7 +33,7 @@ def get_args():
                         '--proteins',
                         help='Proteins FASTA',
                         metavar='proteins',
-                        type=argparse.FileType('rt'),
+                        type=argparse.FileType('r'),
                         required=True)
 
 
@@ -58,22 +59,16 @@ def main():
         if line.startswith('>'): # never throws an exception
             continue
 
-        match = re.search('>\d+', line) # \d means any digit, + means one or more
+        match = re.search(r'>(\d+)', line) # \d means any digit, + means one or more
         if match:
-            protein_id = (match.group(1))
-            clustered_ids(protein_id)
-            break
+            clustered_ids.add(match.group(1))
 
 
     num_written = 0
     num_total = 0
     for rec in SeqIO.parse(args.proteins, 'fasta'):
         num_total += 1
-        # match = re.search('>\d+)', rec.id)
-        # if match:
-        #     protein_id = match.group(1)
-
-        protein_id = re.sub('\|.*', '', rec.id)
+        protein_id = re.sub(r'\|.*', '', rec.id)
 
         if protein_id not in clustered_ids:
             SeqIO.write(rec, args.outfile, 'fasta')
