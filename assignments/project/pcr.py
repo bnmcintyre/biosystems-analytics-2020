@@ -21,7 +21,6 @@ def get_args():
 
     parser.add_argument('seq',
                         metavar='str',
-                        #type=argparse.FileType('r'),
                         help='Target DNA sequence')
 
     parser.add_argument('-l',
@@ -88,55 +87,46 @@ def main():
     seq = args.seq.upper()
     length = args.length
     out = args.outfile
-    amount = args.amount
-    vol = args.volume
-    num = args.samples
 
+# Creates the Forward and Reverse Primer using string indexing
     nucs = dict(A='T', T='A', G='C', C='G')
 
-    rev = []
+    rev_list = []
     for i in range(-length, 0):
         if seq[i] in nucs:
-            rev.append(nucs.get(seq[i]))
+            rev_list.append(nucs.get(seq[i]))
 
-    fwd = []
+    fwd_list = []
     for i in range(0, length):
-        fwd.append(seq[i])
+        fwd_list.append(seq[i])
 
-    fwd = ''.join(fwd)
-    rev = ''.join(rev) # figure out how to flip this to print 5-3?
+    fwd = ''.join(fwd_list)
+    rev = ''.join(rev_list) # figure out how to flip this to print 5-3?
 
-    fA, fT, fG, fC = 0, 0, 0, 0
-    for i in range(len(fwd)):
-        if fwd[i] == 'A':
-            fA += 1
-        if fwd[i] == 'T':
-            fT += 1
-        if fwd[i] == 'G':
-            fG += 1
-        if fwd[i] == 'C':
-            fC += 1
+# Counts the number of each nucleotide in each primer
+    fA = fwd.count('A')
+    fT = fwd.count('T')
+    fG = fwd.count('G')
+    fC = fwd.count('C')
 
-    rA, rT, rG, rC = 0, 0, 0, 0
-    for i in range(len(rev)):
-        if rev[i] == 'A':
-            rA += 1
-        if rev[i] == 'T':
-            rT += 1
-        if rev[i] == 'G':
-            rG += 1
-        if rev[i] == 'C':
-            rC += 1
+    rA = rev.count('A')
+    rT = rev.count('T')
+    rG = rev.count('G')
+    rC = rev.count('C')
 
+# Calculates the melting temperature
     TmF = 2 * (fA + fT) + 4 * (fG + fC)
     TmR = 2 * (rA + rT) + 4 * (rG + rC)
 
-    polymerase = (vol/2) * num
-    primers = (vol/50) * .4 * num
-    bsa = (vol/20) * num
-    water = ((vol - amount) * num) - ((polymerase + (2 * primers) + bsa))
+# Calculates the Master Mix volumes for the PCR reaction
+# I got these numbers from my labs MM calc - MAY NOT BE ACCURATE
+# This calculator makes a lot of assumptions about your reactions
+    polymerase = (args.volume/2) * args.samples
+    primers = round((args.volume/50) * .4 * args.samples , 1)
+    bsa = (args.volume/20) * args.samples
+    water = ((args.volume - args.amount) * args.samples) - ((polymerase + (2 * primers) + bsa))
 
-
+# Outputs this information to an output file
     outname = open(args.outfile, 'wt')
     outname.write(
         f'Forward Primer in 5-3: "{fwd}"' + '\n'
@@ -151,8 +141,8 @@ def main():
     )
     outname.close()
 
+# Done statement
     print(f'Done, check user directory for outfile {out}.')
-
 
 
 # --------------------------------------------------
