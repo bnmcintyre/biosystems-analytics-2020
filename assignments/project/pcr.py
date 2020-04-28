@@ -9,6 +9,7 @@ import argparse
 import os
 import sys
 
+
 # --------------------------------------------------
 def get_args():
     """Get command-line arguments"""
@@ -17,9 +18,7 @@ def get_args():
         description='Find PCR primers and Parameters',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('seq',
-                        metavar='str',
-                        help='Target DNA sequence')
+    parser.add_argument('seq', metavar='str', help='Target DNA sequence')
 
     parser.add_argument('-l',
                         '--length',
@@ -83,7 +82,6 @@ def get_args():
                         metavar='FILE',
                         default='out_pcr')
 
-
     args = parser.parse_args()
 
     if args.length <= 0:
@@ -93,7 +91,8 @@ def get_args():
         parser.error(f'Sample number "{args.samples}" must be greater than 0.')
 
     if args.volume <= 0:
-        parser.error(f'Reaction volume "{args.volume}" must be greater than 0.')
+        parser.error(
+            f'Reaction volume "{args.volume}" must be greater than 0.')
 
     if args.amount <= 0:
         parser.error(f'Amount of DNA "{args.amount}" must be greater than 0.')
@@ -115,19 +114,11 @@ def get_args():
                      f'"{args.bsainitial}" must be greater than 0.')
 
     if len(args.seq) < args.length:
-        parser.error(f'Sequence length of "{len(args.seq)}" must be longer than primer '
-                     f'length of "{args.length}"')
+        parser.error(
+            f'Sequence length of "{len(args.seq)}" must be longer than primer '
+            f'length of "{args.length}"')
 
     return args
-
-
-# -------------------------------------------------
-def test_usage():
-    """usage"""
-
-    for flag in ['', '-h', '--help']:
-        out = getoutput('{} {}'.format(prg, flag))
-        assert re.match("usage", out, re.IGNORECASE)
 
 
 # -------------------------------------------------
@@ -146,10 +137,12 @@ def test_base_count():
     assert (0, 1, 0, 0) == base_count('C')
     assert (0, 0, 1, 0) == base_count('G')
     assert (0, 0, 0, 1) == base_count('T')
+    assert (2, 2, 3, 1) == base_count('ACTGACGG')
 
 
 # --------------------------------------------------
 def melt_temp_calc(calc):
+    """docstring"""
 
     return (2 * (calc[0] + calc[1])) + (4 * (calc[2] + calc[3]))
 
@@ -167,25 +160,43 @@ def test_melt_temp_calc():
 
 
 # --------------------------------------------------
-def MM_calc():
+def MM_calc(volume, polyinitial, samples, ):
     """calculates MM portions"""
 
     args = get_args()
 
-    polymerase = (args.volume/args.polyinitial) * args.samples
-    primers = round((args.volume/args.primerinitial) * args.primerfinal * args.samples , 1)
-    bsa = (args.volume/args.bsainitial) * args.samples
-    water = ((args.volume - args.amount) * args.samples) - ((polymerase + (2 * primers) + bsa))
+    polymerase = (args.volume / args.polyinitial) * args.samples
+    primers = round(
+        (args.volume / args.primerinitial) * args.primerfinal * args.samples,
+        1)
+    bsa = (args.volume / args.bsainitial) * args.samples
+    water = ((args.volume - args.amount) * args.samples) - (
+        (polymerase + (2 * primers) + bsa))
 
     return polymerase, primers, bsa, water
 
 
 # --------------------------------------------------
 def test_MM_calc():
-    # """test"""
-    #
-    # assert (100.0, 1.6, 10.0, 36.8) == MM_calc()
-    #
+    """test"""
+
+    assert (100.0, 1.6, 10.0, 36.8) == MM_calc(1, 2, 3, 4)
+
+
+# --------------------------------------------------
+def calc_polymerase(volume, polyinitial, samples):
+    """Calculate polymerase"""
+
+    polymerase = (volume / polyinitial) * samples
+
+
+# --------------------------------------------------
+def test_calc_polymerase():
+    """Test polymerase"""
+
+    assert calc_polymerase(1, 1, 1) == 1
+    assert calc_polymerase(0, 0, 0) == 1
+
 
 # --------------------------------------------------
 # def run():
@@ -245,7 +256,7 @@ def main():
         fwd_list.append(seq[i])
 
     fwd = ''.join(fwd_list)
-    rev = ''.join(rev_list) # figure out how to flip this to print 5-3?
+    rev = ''.join(rev_list)  # figure out how to flip this to print 5-3?
 
     # Counts the number of each nucleotide in each primer
     fA, fC, fG, fT = base_count(fwd)
@@ -262,17 +273,15 @@ def main():
 
     # Outputs this information to an output file
     outname = open(args.outfile, 'wt')
-    outname.write(
-        f'Forward Primer in 5-3: "{fwd}"' + '\n'
-        f'Reverse Primer in 3-5: "{rev}"' + '\n'
-        f'Tm Forward = "{TmF}C"' + '\n'
-        f'Tm Reverse = "{TmR}C"' + '\n'
-        f'Polymerase: {polymerase} uL' + '\n'
-        f'Forward Primer: {primers} uL' + '\n'
-        f'Reverse Primer: {primers} uL' + '\n'
-        f'BSA: {bsa} uL' + '\n'
-        f'Water: {water} uL' + '\n'
-    )
+    outname.write(f'Forward Primer in 5-3: "{fwd}"' + '\n'
+                  f'Reverse Primer in 3-5: "{rev}"' + '\n'
+                  f'Tm Forward = "{TmF}C"' + '\n'
+                  f'Tm Reverse = "{TmR}C"' + '\n'
+                  f'Polymerase: {polymerase} uL' + '\n'
+                  f'Forward Primer: {primers} uL' + '\n'
+                  f'Reverse Primer: {primers} uL' + '\n'
+                  f'BSA: {bsa} uL' + '\n'
+                  f'Water: {water} uL' + '\n')
     outname.close()
 
     # Done statement
