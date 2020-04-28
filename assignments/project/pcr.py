@@ -8,8 +8,6 @@ Purpose: Find PCR Primers and parameters
 import argparse
 import os
 import sys
-from Bio import SeqIO
-
 
 # --------------------------------------------------
 def get_args():
@@ -51,6 +49,34 @@ def get_args():
                         type=int,
                         default=5)
 
+    parser.add_argument('-p',
+                        '--primerfinal',
+                        help='final concentraton of primer in uM',
+                        metavar='float',
+                        type=float,
+                        default=0.4)
+
+    parser.add_argument('-i',
+                        '--primerinitial',
+                        help='initial concentration of primer uM',
+                        metavar='float',
+                        type=float,
+                        default=50)
+
+    parser.add_argument('-g',
+                        '--polyinitial',
+                        help='initial concentration of polymerase',
+                        metavar='int',
+                        type=int,
+                        default=2)
+
+    parser.add_argument('-b',
+                        '--bsainitial',
+                        help='initial concentration of BSA',
+                        metavar='int',
+                        type=int,
+                        default=20)
+
     parser.add_argument('-o',
                         '--outfile',
                         help='output file name',
@@ -72,11 +98,129 @@ def get_args():
     if args.amount <= 0:
         parser.error(f'Amount of DNA "{args.amount}" must be greater than 0.')
 
+    if args.polyinitial <= 0:
+        parser.error(f'Initial concentration of Polymerase '
+                     f'"{args.polyinitial}" must be greater than 0.')
+
+    if args.primerfinal <= 0:
+        parser.error(f'Final concentration of primer '
+                     f'"{args.primerfinal}" must be greater than 0.')
+
+    if args.primerinitial <= 0:
+        parser.error(f'Initial concentration of primer '
+                     f'"{args.primerinitial}" must be greater than 0.')
+
+    if args.bsainitial <= 0:
+        parser.error(f'Initial concentration of BSA '
+                     f'"{args.bsainitial}" must be greater than 0.')
+
     if len(args.seq) < args.length:
         parser.error(f'Sequence length of "{len(args.seq)}" must be longer than primer '
                      f'length of "{args.length}"')
 
     return args
+
+
+# -------------------------------------------------
+def test_usage():
+    """usage"""
+
+    for flag in ['', '-h', '--help']:
+        out = getoutput('{} {}'.format(prg, flag))
+        assert re.match("usage", out, re.IGNORECASE)
+
+
+# -------------------------------------------------
+def base_count(seq):
+    """Counts number of Nucleotides"""
+
+    return seq.count('A'), seq.count('C'), seq.count('G'), seq.count('T')
+
+
+# --------------------------------------------------
+def test_base_count():
+    """test"""
+
+    assert (0, 0, 0, 0) == base_count('')
+    assert (1, 0, 0, 0) == base_count('A')
+    assert (0, 1, 0, 0) == base_count('C')
+    assert (0, 0, 1, 0) == base_count('G')
+    assert (0, 0, 0, 1) == base_count('T')
+
+
+# --------------------------------------------------
+def melt_temp_calc(calc):
+
+    return (2 * (calc[0] + calc[1])) + (4 * (calc[2] + calc[3]))
+
+
+# --------------------------------------------------
+def test_melt_temp_calc():
+    """test"""
+
+    assert 0 == melt_temp_calc('')
+    assert 24 == melt_temp_calc('CTTATTAGTT')
+    assert 26 == melt_temp_calc('ATGGTTTCTA')
+
+
+# --------------------------------------------------
+
+
+# --------------------------------------------------
+def MM_calc():
+    """calculates MM portions"""
+
+    args = get_args()
+
+    polymerase = (args.volume/args.polyinitial) * args.samples
+    primers = round((args.volume/args.primerinitial) * args.primerfinal * args.samples , 1)
+    bsa = (args.volume/args.bsainitial) * args.samples
+    water = ((args.volume - args.amount) * args.samples) - ((polymerase + (2 * primers) + bsa))
+
+    return polymerase, primers, bsa, water
+
+
+# --------------------------------------------------
+def test_MM_calc():
+    # """test"""
+    #
+    # assert (100.0, 1.6, 10.0, 36.8) == MM_calc()
+    #
+
+# --------------------------------------------------
+# def run():
+#     """run and test"""
+#
+#     out_tmpl = 'Done, check user directory for outfile "{out}".'
+#     run_tmpl = '{prg} {file} -o {out_file}'
+#     out_file = random_filename()
+#
+#     if os.path.isfile(out_file):
+#         os.remove(out_file)
+#     try:
+#         cmd = run_tmpl.format(prg=prg,
+#                               file=input2,
+#                               out_file=out_file)
+#
+#         rv, out = getstatusoutput(cmd)
+#         assert rv == 0
+#         assert out.split('\n')[-1] == out_tmpl.format(out=out_file)
+#
+#     finally:
+#         if os.path.isfile(out_file):
+#             os.remove(out_file)
+
+
+# --------------------------------------------------
+def test_01():
+    """test run 1"""
+
+    # run({
+    #     'kw': '"complete proteome"',
+    #     'tax': '-s Metazoa FUNGI viridiplantae',
+    #     'skipped': 14,
+    #     'took': 1
+    # })
 
 
 # --------------------------------------------------
@@ -88,7 +232,7 @@ def main():
     length = args.length
     out = args.outfile
 
-# Creates the Forward and Reverse Primer using string indexing
+    # Creates the Forward and Reverse Primer using string indexing
     nucs = dict(A='T', T='A', G='C', C='G')
 
     rev_list = []
@@ -103,30 +247,20 @@ def main():
     fwd = ''.join(fwd_list)
     rev = ''.join(rev_list) # figure out how to flip this to print 5-3?
 
-# Counts the number of each nucleotide in each primer
-    fA = fwd.count('A')
-    fT = fwd.count('T')
-    fG = fwd.count('G')
-    fC = fwd.count('C')
+    # Counts the number of each nucleotide in each primer
+    fA, fC, fG, fT = base_count(fwd)
+    rA, rC, rG, rT = base_count(rev)
+    fwd_calc = [fA, fT, fG, fC]
+    rev_calc = [rA, rT, rG, rC]
 
-    rA = rev.count('A')
-    rT = rev.count('T')
-    rG = rev.count('G')
-    rC = rev.count('C')
+    # Calculates the melting temperature
+    TmF = melt_temp_calc(fwd_calc)
+    TmR = melt_temp_calc(rev_calc)
 
-# Calculates the melting temperature
-    TmF = 2 * (fA + fT) + 4 * (fG + fC)
-    TmR = 2 * (rA + rT) + 4 * (rG + rC)
+    # Calculates the Master Mix volumes for the PCR reaction
+    polymerase, primers, bsa, water = MM_calc()
 
-# Calculates the Master Mix volumes for the PCR reaction
-# I got these numbers from my labs MM calc - MAY NOT BE ACCURATE
-# This calculator makes a lot of assumptions about your reactions
-    polymerase = (args.volume/2) * args.samples
-    primers = round((args.volume/50) * .4 * args.samples , 1)
-    bsa = (args.volume/20) * args.samples
-    water = ((args.volume - args.amount) * args.samples) - ((polymerase + (2 * primers) + bsa))
-
-# Outputs this information to an output file
+    # Outputs this information to an output file
     outname = open(args.outfile, 'wt')
     outname.write(
         f'Forward Primer in 5-3: "{fwd}"' + '\n'
@@ -141,8 +275,8 @@ def main():
     )
     outname.close()
 
-# Done statement
-    print(f'Done, check user directory for outfile {out}.')
+    # Done statement
+    print(f'Done, check user directory for outfile "{out}".')
 
 
 # --------------------------------------------------
