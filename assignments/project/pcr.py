@@ -115,122 +115,116 @@ def get_args():
                      f'"{args.bsainitial}" must be greater than 0.')
 
     if len(args.seq) < args.length:
-        parser.error(f'Sequence length of "{len(args.seq)}" must be longer than primer '
-                     f'length of "{args.length}"')
+        parser.error(f'Sequence length of "{len(args.seq)}" must be longer '
+                     f'than primer length of "{args.length}"')
 
     return args
-
-
-# -------------------------------------------------
-def test_usage():
-    """usage"""
-
-    for flag in ['', '-h', '--help']:
-        out = getoutput('{} {}'.format(prg, flag))
-        assert re.match("usage", out, re.IGNORECASE)
 
 
 # -------------------------------------------------
 def base_count(seq):
     """Counts number of Nucleotides"""
 
-    return seq.count('A'), seq.count('C'), seq.count('G'), seq.count('T')
+    return seq.count('A'), seq.count('T'), seq.count('G'), seq.count('C')
 
 
 # --------------------------------------------------
 def test_base_count():
-    """test"""
+    """test base count"""
 
     assert (0, 0, 0, 0) == base_count('')
     assert (1, 0, 0, 0) == base_count('A')
-    assert (0, 1, 0, 0) == base_count('C')
+    assert (0, 1, 0, 0) == base_count('T')
     assert (0, 0, 1, 0) == base_count('G')
-    assert (0, 0, 0, 1) == base_count('T')
+    assert (0, 0, 0, 1) == base_count('C')
+    assert (2, 1, 3, 2) == base_count('AACCGGGT')
 
 
 # --------------------------------------------------
 def melt_temp_calc(calc):
+    """calculate melting temperature"""
 
     return (2 * (calc[0] + calc[1])) + (4 * (calc[2] + calc[3]))
 
-
 # --------------------------------------------------
 def test_melt_temp_calc():
+    """test melt temp calculation"""
+    calc = (0, 0, 0, 0)
+    assert 0 == melt_temp_calc(calc)
+    calc = (2, 6, 1, 1)
+    assert 24 == melt_temp_calc(calc)
+    calc = (2, 5, 2, 1)
+    assert 26 == melt_temp_calc(calc)
+
+# --------------------------------------------------
+def calc_polymerase(volume, polyinitial, samples):
+    """polymerase calculation"""
+
+    polymerase = (volume / polyinitial) * samples
+    return polymerase
+
+# --------------------------------------------------
+def test_calc_polymerase():
     """test"""
 
-    assert 0 == melt_temp_calc('')
-    assert 24 == melt_temp_calc('CTTATTAGTT')
-    assert 26 == melt_temp_calc('ATGGTTTCTA')
-
-
-# --------------------------------------------------
-
+    assert calc_polymerase(1, 1, 1) == 1
+    assert calc_polymerase(0, 1, 0) == 0
+    assert calc_polymerase(20, 2, 10) == 100
 
 # --------------------------------------------------
-def MM_calc():
-    """calculates MM portions"""
+def calc_primers(volume, primerinitial, primerfinal, samples):
+     """primer calculation"""
 
-    args = get_args()
-
-    polymerase = (args.volume/args.polyinitial) * args.samples
-    primers = round((args.volume/args.primerinitial) * args.primerfinal * args.samples , 1)
-    bsa = (args.volume/args.bsainitial) * args.samples
-    water = ((args.volume - args.amount) * args.samples) - ((polymerase + (2 * primers) + bsa))
-
-    return polymerase, primers, bsa, water
-
+     primers = round((volume / primerinitial) * primerfinal * samples, 1)
+     return primers
 
 # --------------------------------------------------
-def test_MM_calc():
-    # """test"""
-    #
-    # assert (100.0, 1.6, 10.0, 36.8) == MM_calc()
-    #
+def test_calc_primers():
+     """test primer calculation"""
+
+     assert calc_primers(1, 1, 1, 1) == 1
+     assert calc_primers(0, 1, 0, 0) == 0
+     assert calc_primers(20, 50, 0.4, 10) == 1.6
 
 # --------------------------------------------------
-# def run():
-#     """run and test"""
-#
-#     out_tmpl = 'Done, check user directory for outfile "{out}".'
-#     run_tmpl = '{prg} {file} -o {out_file}'
-#     out_file = random_filename()
-#
-#     if os.path.isfile(out_file):
-#         os.remove(out_file)
-#     try:
-#         cmd = run_tmpl.format(prg=prg,
-#                               file=input2,
-#                               out_file=out_file)
-#
-#         rv, out = getstatusoutput(cmd)
-#         assert rv == 0
-#         assert out.split('\n')[-1] == out_tmpl.format(out=out_file)
-#
-#     finally:
-#         if os.path.isfile(out_file):
-#             os.remove(out_file)
+def calc_bsa(volume, bsainitial, samples):
+     """calculate BSA"""
 
+     bsa = (volume / bsainitial) * samples
+     return bsa
 
 # --------------------------------------------------
-def test_01():
-    """test run 1"""
+def test_calc_bsa():
+     """test BSA calculation"""
 
-    # run({
-    #     'kw': '"complete proteome"',
-    #     'tax': '-s Metazoa FUNGI viridiplantae',
-    #     'skipped': 14,
-    #     'took': 1
-    # })
+     assert calc_bsa(0, 1, 0) == 0
+     assert calc_bsa(1, 1, 1) == 1
+     assert calc_bsa(20, 20, 10) == 10
 
+# --------------------------------------------------
+def calc_water(volume, amount, samples, polymerase, primers, bsa):
+     """water calculation"""
+
+     water = ((volume - amount) * samples) - ((polymerase + (2 * primers) + bsa))
+     return water
+
+# --------------------------------------------------
+def test_calc_water():
+     """test water calculation"""
+
+     assert calc_water(0, 0, 0, 0, 0, 0) == 0
+     assert calc_water(1, 1, 1, 1, 1, 1) == -4
 
 # --------------------------------------------------
 def main():
     """Make a jazz noise here"""
 
     args = get_args()
-    seq = args.seq.upper()
-    length = args.length
-    out = args.outfile
+    seq, length, out = args.seq.upper(), args.length, args.outfile
+    volume, polyinitial, samples = args.volume, args.polyinitial, args.samples
+    amount, primerinitial = args.amount, args.primerinitial
+    bsainitial, primerfinal = args.bsainitial, args.primerfinal
+
 
     # Creates the Forward and Reverse Primer using string indexing
     nucs = dict(A='T', T='A', G='C', C='G')
@@ -248,8 +242,8 @@ def main():
     rev = ''.join(rev_list) # figure out how to flip this to print 5-3?
 
     # Counts the number of each nucleotide in each primer
-    fA, fC, fG, fT = base_count(fwd)
-    rA, rC, rG, rT = base_count(rev)
+    fA, fT, fG, fC = base_count(fwd)
+    rA, rT, rG, rC = base_count(rev)
     fwd_calc = [fA, fT, fG, fC]
     rev_calc = [rA, rT, rG, rC]
 
@@ -258,7 +252,10 @@ def main():
     TmR = melt_temp_calc(rev_calc)
 
     # Calculates the Master Mix volumes for the PCR reaction
-    polymerase, primers, bsa, water = MM_calc()
+    polymerase = calc_polymerase(volume, polyinitial, samples)
+    primers = calc_primers(volume, primerinitial, primerfinal, samples)
+    bsa = calc_bsa(volume, bsainitial, samples)
+    water = calc_water(volume, amount, samples, polymerase, primers, bsa)
 
     # Outputs this information to an output file
     outname = open(args.outfile, 'wt')
