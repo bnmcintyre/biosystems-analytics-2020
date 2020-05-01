@@ -114,14 +114,10 @@ def get_args():
                      f'"{args.bsainitial}" must be greater than 0.')
 
     if len(args.seq) < args.length:
-<<<<<<< HEAD
         parser.error(f'Sequence length of "{len(args.seq)}" must be longer '
                      f'than primer length of "{args.length}"')
-=======
-        parser.error(
-            f'Sequence length of "{len(args.seq)}" must be longer than primer '
-            f'length of "{args.length}"')
->>>>>>> d1d93ba3f29f452eedbf0948305708c6c7c65e0b
+
+
 
     return args
 
@@ -141,22 +137,15 @@ def test_base_count():
     assert (1, 0, 0, 0) == base_count('A')
     assert (0, 1, 0, 0) == base_count('T')
     assert (0, 0, 1, 0) == base_count('G')
-<<<<<<< HEAD
     assert (0, 0, 0, 1) == base_count('C')
     assert (2, 1, 3, 2) == base_count('AACCGGGT')
-=======
-    assert (0, 0, 0, 1) == base_count('T')
-    assert (2, 2, 3, 1) == base_count('ACTGACGG')
->>>>>>> d1d93ba3f29f452eedbf0948305708c6c7c65e0b
+    assert (2, 1, 3, 2) == base_count('ACTGACGG')
+
 
 
 # --------------------------------------------------
 def melt_temp_calc(calc):
-<<<<<<< HEAD
     """calculate melting temperature"""
-=======
-    """docstring"""
->>>>>>> d1d93ba3f29f452eedbf0948305708c6c7c65e0b
 
     return (2 * (calc[0] + calc[1])) + (4 * (calc[2] + calc[3]))
 
@@ -186,26 +175,12 @@ def test_calc_polymerase():
     assert calc_polymerase(20, 2, 10) == 100
 
 # --------------------------------------------------
-<<<<<<< HEAD
 def calc_primers(volume, primerinitial, primerfinal, samples):
      """primer calculation"""
 
      primers = round((volume / primerinitial) * primerfinal * samples, 1)
      return primers
-=======
-def MM_calc(volume, polyinitial, samples, ):
-    """calculates MM portions"""
 
-    args = get_args()
-
-    polymerase = (args.volume / args.polyinitial) * args.samples
-    primers = round(
-        (args.volume / args.primerinitial) * args.primerfinal * args.samples,
-        1)
-    bsa = (args.volume / args.bsainitial) * args.samples
-    water = ((args.volume - args.amount) * args.samples) - (
-        (polymerase + (2 * primers) + bsa))
->>>>>>> d1d93ba3f29f452eedbf0948305708c6c7c65e0b
 
 # --------------------------------------------------
 def test_calc_primers():
@@ -216,34 +191,12 @@ def test_calc_primers():
      assert calc_primers(20, 50, 0.4, 10) == 1.6
 
 # --------------------------------------------------
-<<<<<<< HEAD
 def calc_bsa(volume, bsainitial, samples):
      """calculate BSA"""
 
      bsa = (volume / bsainitial) * samples
      return bsa
-=======
-def test_MM_calc():
-    """test"""
 
-    assert (100.0, 1.6, 10.0, 36.8) == MM_calc(1, 2, 3, 4)
-
-
-# --------------------------------------------------
-def calc_polymerase(volume, polyinitial, samples):
-    """Calculate polymerase"""
-
-    polymerase = (volume / polyinitial) * samples
-
-
-# --------------------------------------------------
-def test_calc_polymerase():
-    """Test polymerase"""
-
-    assert calc_polymerase(1, 1, 1) == 1
-    assert calc_polymerase(0, 0, 0) == 1
-
->>>>>>> d1d93ba3f29f452eedbf0948305708c6c7c65e0b
 
 # --------------------------------------------------
 def test_calc_bsa():
