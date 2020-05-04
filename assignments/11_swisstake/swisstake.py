@@ -23,12 +23,13 @@ def get_args():
                         metavar='FILE',
                         nargs='+',
                         type=argparse.FileType('r'),
-                        help='SwissProt file')
+                        help='Swiss file')
 
     parser.add_argument('-k',
                         '--keyword',
                         help='Keyword to take',
                         required=True,
+                       # nargs='+',
                         metavar='keyword',
                         type=str)
 
@@ -55,7 +56,6 @@ def main():
 
     args = get_args()
 
-
     wanted_kw = set(map(str.lower, args.keyword))
     skip_taxa = set(map(str.lower, args.skiptaxa))
 
@@ -64,6 +64,7 @@ def main():
 
     for rec in SeqIO.parse(args.file, "swiss"):
         annots = rec.annotations
+
         taxa = annots.get('taxonomy')
         if taxa:
             taxa = set(map(str.lower, taxa))
@@ -76,10 +77,9 @@ def main():
             keywords = set(map(str.lower, keywords))
             if wanted_kw.intersection(keywords):
                 taken += 1
-                SeqIO.write(rec, args.outfile, 'fasta')
-
-        break
-
+                SeqIO.write(rec, args.outfile, 'fasta-2line')
+            else:
+                skipped += 1
 
     print(f'Done, skipped {skipped} and took {taken}. '
           f'See output in "{args.outfile.name}.')
