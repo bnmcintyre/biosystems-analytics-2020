@@ -21,7 +21,6 @@ def get_args():
 
     parser.add_argument('file',
                         metavar='FILE',
-                        nargs='+',
                         type=argparse.FileType('r'),
                         help='SwissProt file')
 
@@ -77,9 +76,6 @@ def main():
             if wanted_kw.intersection(keywords):
                 taken += 1
                 SeqIO.write(rec, args.outfile, 'fasta')
-
-        break
-
 
     print(f'Done, skipped {skipped} and took {taken}. '
           f'See output in "{args.outfile.name}.')
