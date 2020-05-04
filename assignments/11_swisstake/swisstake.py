@@ -21,7 +21,6 @@ def get_args():
 
     parser.add_argument('file',
                         metavar='FILE',
-                        nargs='+',
                         type=argparse.FileType('r'),
                         help='Swiss file')
 
@@ -80,6 +79,7 @@ def main():
                 SeqIO.write(rec, args.outfile, 'fasta-2line')
             else:
                 skipped += 1
+                SeqIO.write(rec, args.outfile, 'fasta')
 
     print(f'Done, skipped {skipped} and took {taken}. '
           f'See output in "{args.outfile.name}.')
