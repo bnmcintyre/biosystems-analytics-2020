@@ -28,7 +28,7 @@ def get_args():
                         '--keyword',
                         help='Keyword to take',
                         required=True,
-                       # nargs='+',
+                        nargs='+',
                         metavar='keyword',
                         type=str)
 
@@ -79,10 +79,9 @@ def main():
                 SeqIO.write(rec, args.outfile, 'fasta-2line')
             else:
                 skipped += 1
-                SeqIO.write(rec, args.outfile, 'fasta')
 
     print(f'Done, skipped {skipped} and took {taken}. '
-          f'See output in "{args.outfile.name}.')
+          f'See output in "{args.outfile.name}".')
 
 
 # --------------------------------------------------
