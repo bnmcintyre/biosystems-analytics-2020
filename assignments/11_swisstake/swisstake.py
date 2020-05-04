@@ -36,7 +36,8 @@ def get_args():
                         '--skiptaxa',
                         help='Taxa to skip',
                         nargs='*',
-                        type=str)
+                        type=str,
+                        default='[]')
 
     parser.add_argument('-o',
                         '--outfile',
