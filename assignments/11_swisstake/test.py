@@ -44,7 +44,7 @@ def test_bad_file():
     """fails on bad file"""
 
     bad = random_filename()
-    rv, out = getstatusoutput('{} -k foo {}'.format(prg, bad))
+    rv, out = getstatusoutput('{} {} -k foo'.format(prg, bad))
     assert rv > 0
     assert re.search(f"No such file or directory: '{bad}'", out)
 
