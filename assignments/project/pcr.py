@@ -18,69 +18,64 @@ def get_args():
         description='Find PCR primers and Parameters',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('seq', metavar='str', help='Target DNA sequence')
+    parser.add_argument('seq', metavar='Target DNA Sequence', help='Target DNA sequence')
 
     parser.add_argument('-l',
                         '--length',
                         help='length of primers',
-                        metavar='int',
+                        metavar='Primer length',
                         type=int,
                         default=10)
 
     parser.add_argument('-s',
                         '--samples',
                         help='number of samples to analyze',
-                        metavar='int',
+                        metavar='Number of samples',
                         type=int,
                         default=10)
 
     parser.add_argument('-v',
                         '--volume',
                         help='reaction volume',
-                        metavar='int',
+                        metavar='reaction volume',
                         type=int,
                         default=20)
 
     parser.add_argument('-a',
                         '--amount',
                         help='amount of DNA for each reaction',
-                        metavar='int',
+                        metavar='amount of DNA per reaction',
                         type=int,
                         default=5)
 
     parser.add_argument('-p',
                         '--primerfinal',
                         help='final concentraton of primer in uM',
-                        metavar='float',
+                        metavar='final primer concentration',
                         type=float,
                         default=0.4)
 
     parser.add_argument('-i',
                         '--primerinitial',
                         help='initial concentration of primer uM',
-                        metavar='float',
+                        metavar='initial primer concentration',
                         type=float,
                         default=50)
 
     parser.add_argument('-g',
                         '--polyinitial',
                         help='initial concentration of polymerase',
-                        metavar='int',
+                        metavar='initial polymerase concentration',
                         type=int,
                         default=2)
 
     parser.add_argument('-b',
                         '--bsainitial',
                         help='initial concentration of BSA',
-                        metavar='int',
+                        metavar='initial BSA concentration',
                         type=int,
                         default=20)
 
-    parser.add_argument('-o',
-                        '--outfile',
-                        help='output file name',
-                        metavar='FILE',
-                        default='out_pcr')
 
     args = parser.parse_args()
 
@@ -118,15 +113,14 @@ def get_args():
                      f'than primer length of "{args.length}"')
 
 
-
     return args
 
 
 # -------------------------------------------------
-def base_count(seq):
+def base_count(DNA):
     """Counts number of Nucleotides"""
 
-    return seq.count('A'), seq.count('T'), seq.count('G'), seq.count('C')
+    return DNA.count('A'), DNA.count('T'), DNA.count('G'), DNA.count('C')
 
 
 # --------------------------------------------------
@@ -225,7 +219,7 @@ def main():
     """Make a jazz noise here"""
 
     args = get_args()
-    seq, length, out = args.seq.upper(), args.length, args.outfile
+    seq, length = args.seq.upper(), args.length
     volume, polyinitial, samples = args.volume, args.polyinitial, args.samples
     amount, primerinitial = args.amount, args.primerinitial
     bsainitial, primerfinal = args.bsainitial, args.primerfinal
@@ -262,22 +256,16 @@ def main():
     bsa = calc_bsa(volume, bsainitial, samples)
     water = calc_water(volume, amount, samples, polymerase, primers, bsa)
 
-    # Outputs this information to an output file
-    outname = open(args.outfile, 'wt')
-    outname.write(f'Forward Primer in 5-3: "{fwd}"' + '\n'
+    # Prints the output of the program to STDOUT
+    print(f'Forward Primer in 5-3: "{fwd}"' + '\n'
                   f'Reverse Primer in 3-5: "{rev}"' + '\n'
-                  f'Tm Forward = "{TmF}C"' + '\n'
-                  f'Tm Reverse = "{TmR}C"' + '\n'
+                  f'Tm Forward: "{TmF}C"' + '\n'
+                  f'Tm Reverse: "{TmR}C"' + '\n'
                   f'Polymerase: {polymerase} uL' + '\n'
                   f'Forward Primer: {primers} uL' + '\n'
                   f'Reverse Primer: {primers} uL' + '\n'
                   f'BSA: {bsa} uL' + '\n'
-                  f'Water: {water} uL' + '\n')
-    outname.close()
-
-    # Done statement
-    print(f'Done, check user directory for outfile "{out}".')
-
+                  f'Water: {water} uL')
 
 # --------------------------------------------------
 if __name__ == '__main__':
