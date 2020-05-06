@@ -1,0 +1,147 @@
+= PCR Primers and Master Mix
+
+The python program, *pcr.py* is a script designed to take a command-line input of a DNA sequence and output the forward and reverse primers, the forward primer and reverse primer melting temperatures (Tm), and the master mix calculations to run a PCR reaction for a default sample number of 10 samples.
+
+This program accepts the following arguments and flags:
+
+- A command-line input of a single target DNA sequence in 5' - 3' direction
+- *-l | --length*: Desired forward and reverse primer length (Default = 10 base pairs)
+- *-s | --samples*: Number of samples for the PCR reaction (Default = 10 samples)
+- *-v | --volume*: Volume of each PCR reaction (Default = 20 uL) 
+- *-a | --amount*: Volume of DNA per PCR reaction (Default = 5 uL)
+- *-p | --primerfinal*: Final concentration of primers in uM (Default = 0.4 uM)
+- *-i | --primerinitial*: Inital concentration of primers in uM (Default = 50 uM)
+- *-g | --polyinitial*: Initial concentration of polymerase (Default = 2)
+- *-b | --bsainitial*: Initial concentration of BSA (Default = 20)
+
+
+When run with -h or —help, the following usage message will appear:
+----
+MacBook-Pro:project bnmcintyre$ ./pcr.py -h
+usage: pcr.py [-h] [-l Primer length] [-s Number of samples]
+              [-v reaction volume] [-a amount of DNA per reaction]
+              [-p final primer concentration]
+              [-i initial primer concentration]
+              [-g initial polymerase concentration]
+              [-b initial BSA concentration] [-o File name]
+              Target DNA Sequence
+
+Find PCR primers and Parameters
+
+positional arguments:
+  Target DNA Sequence   Target DNA sequence
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -l Primer length, --length Primer length
+                        length of primers (default: 10)
+  -s Number of samples, --samples Number of samples
+                        number of samples to analyze (default: 10)
+  -v reaction volume, --volume reaction volume
+                        reaction volume (default: 20)
+  -a amount of DNA per reaction, --amount amount of DNA per reaction
+                        amount of DNA for each reaction (default: 5)
+  -p final primer concentration, --primerfinal final primer concentration
+                        final concentraton of primer in uM (default: 0.4)
+  -i initial primer concentration, --primerinitial initial primer concentration
+                        initial concentration of primer uM (default: 50)
+  -g initial polymerase concentration, --polyinitial initial polymerase concentration
+                        initial concentration of polymerase (default: 2)
+  -b initial BSA concentration, --bsainitial initial BSA concentration
+                        initial concentration of BSA (default: 20)
+ 
+----
+== Primer Generation
+
+This program generates forward and reverse primers from a given target coding sequence inputted in the command-line in the 5'-3' direction.
+The *forward primer* binds to the anti-sense (template) strand of DNA while the *reverse primer* binds to the sense (coding) strand of DNA. 
+Therefore, the forward primer will ultimately have the same sequence as the target sequence starting from the 5' end of the target to the 3’ end and the reverse primer will have the complementary sequence starting from the 3’end of the target to the 5' end. 
+
+
+== Melting Temperature (Tm)
+
+The melting temperature (Tm) of a dsDNA strand is the temperature at which 50% of the DNA has ‘melted’ or *denatured* into two individual strands. This value changes based on the amount of A’s, T’s, G’s and C’s there are in a given DNA sequence. The Tm for each primer is calculated in this program using the following formula:
+---
+(2 * (#A + #T)) + (4 * (#G + #C))
+---
+
+== Master Mix Calculations
+
+The master mix of a typical PCR reaction includes forward and reverse primers, a polymerase (typically Taq or Phusion), BSA, dNTPs, and water. 
+This program calculates the values in uL for these reagents using the flagged information from the user. 
+This information must be included when entering the command in the command line, an example is shown below.
+----
+$ ./pcr.py ATGGATAGAGATC -l 5 -s 10 -v 20 -a 5
+----
+This code then takes these input values and calculates the amount of each reagent to add (in uL). 
+****
+Note: The equations for these calculations were derived from the PCR protocol and master mix calculators from the U'Ren lab in the University of Arizona Department of Biosystems Engineering. Your reaction may use different reagents and different concentrations. Please check your reagents and protocol before using this program. :)
+****
+
+== Expected Output
+
+Once the program has finished running, the results of the program will be output to  STDOUT.
+----
+MacBook-Pro:project bnmcintyre$ ./pcr.py ATGGATAGAGATC -l 5 -s 10 -v 20 -a 5
+Forward Primer in 5-3: "ATGGA"
+Reverse Primer in 3-5: "TCTAG"
+Tm Forward: "14C"
+Tm Reverse: "14C"
+Polymerase: 100.0 uL
+Forward Primer: 1.6 uL
+Reverse Primer: 1.6 uL
+BSA: 10.0 uL
+Water: 36.8 uL
+----
+
+== Passing Test Suite
+
+To run the built-in unit test suite, use the command:
+----
+$ pytest -xv pcr.py
+----
+
+A passing unit test suite will look like:
+----
+MacBook-Pro:project bnmcintyre$ pytest -xv pcr.py
+============================= test session starts ==============================
+platform darwin -- Python 3.8.1, pytest-5.3.4, py-1.8.1, pluggy-0.13.1 -- /Library/Frameworks/Python.framework/Versions/3.8/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/bnmcintyre/Work/biosystems-analytics-2020/assignments/project
+collected 6 items                                                              
+
+pcr.py::test_base_count PASSED                                           [ 16%]
+pcr.py::test_melt_temp_calc PASSED                                       [ 33%]
+pcr.py::test_calc_polymerase PASSED                                      [ 50%]
+pcr.py::test_calc_primers PASSED                                         [ 66%]
+pcr.py::test_calc_bsa PASSED                                             [ 83%]
+pcr.py::test_calc_water PASSED                                           [100%]
+
+============================== 6 passed in 0.13s ===============================
+----
+
+To run the given integration test suite *test.py*, ensure that the test.py program is in the same directory as the pcr.py program and use the command:
+----
+$ make test
+----
+A passing integration test suite will look like:
+----
+MacBook-Pro:project bnmcintyre$ make test
+pytest -xv test.py
+============================= test session starts ==============================
+platform darwin -- Python 3.8.1, pytest-5.3.4, py-1.8.1, pluggy-0.13.1 -- /Library/Frameworks/Python.framework/Versions/3.8/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/bnmcintyre/Work/biosystems-analytics-2020/assignments/project
+collected 4 items                                                              
+
+test.py::test_exists PASSED                                              [ 25%]
+test.py::test_usage PASSED                                               [ 50%]
+test.py::test_primer_seqs PASSED                                         [ 75%]
+test.py::test_default PASSED                                             [100%]
+
+============================== 4 passed in 0.25s ===============================
+----
+
+Brenna McIntyre - BE 434 - Final Project - Spring 2020 <3
+
+
