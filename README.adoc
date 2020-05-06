@@ -3,17 +3,24 @@
 The python program, *pcr.py* is a script designed to take a command-line input of a DNA sequence and output the forward and reverse primers, the forward primer and reverse primer melting temperatures (Tm), and the master mix calculations to run a PCR reaction for a default sample number of 10 samples.
 
 This program accepts the following arguments and flags:
-[ ] A command-line input of a single target DNA sequence in 5' - 3' direction
-[ ] *-l | --length*: Desired forward and reverse primer length (Default = 10 base pairs)
-[ ] *-s | --samples*: Number of samples for the PCR reaction (Default = 10 samples)
-[ ] *-v | --volume*: Volume of each PCR reaction (Default = 20 uL) 
-[ ] *-a | --amount*: Volume of DNA per PCR reaction (Default = 5 uL)
-[ ] *-o | --outfile*: Name of output file (Default = ‘out_pcr’)
+
+- A command-line input of a single target DNA sequence in 5' - 3' direction
+- *-l | --length*: Desired forward and reverse primer length (Default = 10 base pairs)
+- *-s | --samples*: Number of samples for the PCR reaction (Default = 10 samples)
+- *-v | --volume*: Volume of each PCR reaction (Default = 20 uL) 
+- *-a | --amount*: Volume of DNA per PCR reaction (Default = 5 uL)
+- *-p | --primerfinal*: Final concentration of primers in uM (Default = 0.4 uM)
+- *-i | --primerinitial*: Inital concentration of primers in uM (Default = 50 uM)
+- *-g | --polyinitial*: Initial concentration of polymerase (Default = 2)
+- *-b | --bsainitial*: Initial concentration of BSA (Default = 20)
+- *-o | --outfile*: Name of output file (Default = ‘out_pcr’)
 
 When run with -h or —help, the following usage message will appear:
 ----
 MacBook-Pro:project bnmcintyre$ ./pcr.py -h
-usage: pcr.py [-h] [-l int] [-s int] [-v int] [-a int] [-o FILE] str
+usage: pcr.py [-h] [-l int] [-s int] [-v int] [-a int] [-p float] [-i float]
+              [-g int] [-b int] [-o FILE]
+              str
 
 Find PCR primers and Parameters
 
@@ -27,6 +34,14 @@ optional arguments:
                         number of samples to analyze (default: 10)
   -v int, --volume int  reaction volume (default: 20)
   -a int, --amount int  amount of DNA for each reaction (default: 5)
+  -p float, --primerfinal float
+                        final concentraton of primer in uM (default: 0.4)
+  -i float, --primerinitial float
+                        initial concentration of primer uM (default: 50)
+  -g int, --polyinitial int
+                        initial concentration of polymerase (default: 2)
+  -b int, --bsainitial int
+                        initial concentration of BSA (default: 20)
   -o FILE, --outfile FILE
                         output file name (default: out_pcr)
 ----
@@ -34,15 +49,15 @@ optional arguments:
 
 This program generates forward and reverse primers from a given target coding sequence inputted in the command-line in the 5'-3' direction.
 The *forward primer* binds to the anti-sense (template) strand of DNA while the *reverse primer* binds to the sense (coding) strand of DNA. 
-Therefore, the forward primer will ultimately have the +++<u>same<u>+++ sequence as the target sequence starting from the 5' end of the target to the 3’ end and the reverse primer will have the +++<u>complementary<u>+++ sequence starting from the 3’end of the target to the 5' end. 
+Therefore, the forward primer will ultimately have the same sequence as the target sequence starting from the 5' end of the target to the 3’ end and the reverse primer will have the complementary sequence starting from the 3’end of the target to the 5' end. 
 
-image::PCRprimerdesignRGFY.jpg
-[https://www.researchgate.net/post/How_to_select_primers_for_Polymerase_Chain_Reaction]
 
 == Melting Temperature (Tm)
 
 The melting temperature (Tm) of a dsDNA strand is the temperature at which 50% of the DNA has ‘melted’ or *denatured* into two individual strands. This value changes based on the amount of A’s, T’s, G’s and C’s there are in a given DNA sequence. The Tm for each primer is calculated in this program using the following formula:
-+{(2 * (#A + #T)) + (4 * (#G + #C))}+
+---
+(2 * (#A + #T)) + (4 * (#G + #C))
+---
 
 == Master Mix Calculations
 
@@ -54,7 +69,7 @@ $ ./pcr.py ATGGATAGAGATC -l 5 -s 10 -v 20 -a 5
 ----
 This code then takes these input values and calculates the amount of each reagent to add (in uL). 
 ****
-Note: These calculations operate under certain assumptions that may not correspond with your reaction. The calculation assumes that your starting concentrations of polymerase, primers, and BSA are 2, 50 uM, and 20 mg/ml and the final concentrations are 1, .4 uM, and 1 mg/ml respectively. If this is not the case for your reaction, then do not use this program to calculate your PCR master mix. This calculation also excludes dNTPs as typically dNTPs are included with the polymerase. 
+Note: The equations for these calculations were derived from the PCR protocol and master mix calculators from the U'Ren lab in the University of Arizona Department of Biosystems Engineering. Your reaction may use different reagents and different concentrations. Please check your reagents and protocol before using this program. :)
 ****
 
 == Expected Output
@@ -66,13 +81,27 @@ Done, check user directory for outfile out_pcr.
 ----
 The program will automatically place the calculated information into a file in your current directory. The default file name will be “out_pcr” but can be changed using the -o command followed by the desired name when inputting the command. 
 ----
-$ ./pcr.py ATGGATAGAGATC -o [name]
+$ ./pcr.py ATGGATAGAGATC -o <name>
 ----
 
 == Passing Test Suite
 
 A passing test suite will look like:
-[INSERT TEST HERE WHEN FINISHED]
+----
+MacBook-Pro:project bnmcintyre$ pytest -xv pcr.py
+============================= test session starts ==============================
+platform darwin -- Python 3.8.1, pytest-5.3.4, py-1.8.1, pluggy-0.13.1 -- /Library/Frameworks/Python.framework/Versions/3.8/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/bnmcintyre/Work/biosystems-analytics-2020/assignments/project
+collected 6 items                                                              
+
+pcr.py::test_base_count PASSED                                           [ 16%]
+pcr.py::test_melt_temp_calc PASSED                                       [ 33%]
+pcr.py::test_calc_polymerase PASSED                                      [ 50%]
+pcr.py::test_calc_primers PASSED                                         [ 66%]
+pcr.py::test_calc_bsa PASSED                                             [ 83%]
+pcr.py::test_calc_water PASSED                                           [100%]
+----
 
 Brenna McIntyre - BE 434 - Final Project - Spring 2020 <3
 
